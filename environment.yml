@@ -1,0 +1,28 @@
+# environment.yml
+name: dm887-3
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - numpy
+  - matplotlib
+  - pandas
+  - tqdm
+  - swig
+  - pip:
+      - gymnasium[box2d,classic_control, other]
+      - stable-baselines3==2.8.0
+      - stable-baselines3[extra]==2.8.0
+      - shimmy>=2.0.0
+      - shimmy[dm-control]
+      - tensorboard >=2.20.0
+      - opencv-python
+      - imageio
