@@ -23,14 +23,14 @@ class ForceRGBChannel(gym.ObservationWrapper):
 def _make_car_env(render_mode=None):
     env = gym.make("CarRacing-v3", continuous=True, render_mode=render_mode)
     #env = gym.wrappers.MaxAndSkipObservation(env, skip=4)
-    env = ResizeObservation(env, (64, 64))
+    env = ResizeObservation(env, (84, 84))
     env = GrayscaleObservation(env, keep_dim=True)
 
     #env = gym.wrappers.ReshapeObservation(env, (64, 64, 1))
     #env = ForceRGBChannel(env) 
     return env
 
-def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_freq=20000, buffer_size=500000):
+def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_freq=20000, buffer_size=100000):
     log_path = f"./eval_results/seed_{seed}/{env_id}/{algo_id}".replace("dm_control/", "")
     os.makedirs(log_path, exist_ok=True)
     print(f"--- Starting Experiment: {env_id}, using Model: {algo_id} ---")
@@ -60,7 +60,7 @@ def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_
         eval_env = VecTransposeImage(eval_env)
 
     adjusted_eval_freq = max(eval_freq // n_envs, 1) # Adjust evaluation frequency according to # of environments
-
+    #buffer_kwargs = {"optimize_memory_usage": True, "handle_timeout_termination": False}
     # 3. Setup the Evaluation Callback (for your plots!)
     eval_callback = EvalCallback(
             eval_env, 
@@ -75,13 +75,13 @@ def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_
     # 4. Initialize & Train
     if algo_id == "PPO":
         #model = PPO(policy_type, env, tensorboard_log=tb_log_dir, ent_coef=0.0075, seed=seed)
-        model = PPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed, batch_size=256)
+        model = PPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed)
     elif algo_id == "SAC":
-        model = SAC(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=buffer_size, seed=seed, learning_rate=1e-4)
+        model = SAC(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=buffer_size, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False})
     elif algo_id == "TD3":
         n_actions = env.action_space.shape[-1]
-        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.3 * np.ones(n_actions)) # sigma = 0.1 leads to too little exploration.
-        model = TD3(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=buffer_size, action_noise=action_noise, seed=seed, learning_rate=1e-4)
+        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1*np.ones(n_actions)) # This configuration gives a bias towards the gas factor when CarRacing.
+        model = TD3(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=buffer_size, action_noise=action_noise, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False})
         
     model.learn(total_timesteps=total_steps, callback=eval_callback, progress_bar=True)
     env.close()

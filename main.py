@@ -12,7 +12,7 @@ if __name__ == "__main__":
     environments = [
         #{"id":"dm_control/cartpole-swingup-v0", "steps": 100000, "eval_freq": 10000}, 
         #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 10000}, 
-        {"id":"CarRacing-v3", "steps": 1000000,"eval_freq": 50000}
+        {"id":"CarRacing-v3", "steps": 500000,"eval_freq": 50000}
     ]
     
     """    
@@ -23,9 +23,9 @@ if __name__ == "__main__":
     ]
     """
     #algorithms = ["SAC", "TD3", "PPO"]
-    algorithms = ["TD3", "SAC", "PPO"]
+    algorithms = ["TD3", "PPO"]
     #seed_pool = [5, 8, 32, 67, 154]
-    seed_pool = [67]
+    seed_pool = [214]
 
     for seed in seed_pool:
         for env in environments:
@@ -58,6 +58,6 @@ if __name__ == "__main__":
                     print(f"Failed to run {algo} on {env['id']}': {e}")
             # Compare the algorithms on the environment
             try:
-                compare_results(results, env['id'])
+               compare_results(results, env['id'])
             except Exception as e:
                print(f"Failed to compare algorithms on {env['id']}': {e}")
