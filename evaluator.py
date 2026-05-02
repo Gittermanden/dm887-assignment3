@@ -6,6 +6,7 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecFrameStack, SubprocVecEnv, VecTransposeImage
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
+from stable_baselines3.common.atari_wrappers import MaxAndSkipEnv
 from gymnasium.wrappers import FlattenObservation, GrayscaleObservation, ResizeObservation, RescaleAction
 from gymnasium.spaces import Box
 
@@ -22,7 +23,7 @@ class ForceRGBChannel(gym.ObservationWrapper):
 
 def _make_car_env(render_mode=None):
     env = gym.make("CarRacing-v3", continuous=True, render_mode=render_mode)
-    #env = gym.wrappers.MaxAndSkipObservation(env, skip=4)
+    env = MaxAndSkipEnv(env, skip=4)
     env = ResizeObservation(env, (84, 84))
     env = GrayscaleObservation(env, keep_dim=True)
 
@@ -30,7 +31,7 @@ def _make_car_env(render_mode=None):
     #env = ForceRGBChannel(env) 
     return env
 
-def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_freq=20000, buffer_size=100000):
+def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_freq=20000, buffer_size=200000):
     log_path = f"./eval_results/seed_{seed}/{env_id}/{algo_id}".replace("dm_control/", "")
     os.makedirs(log_path, exist_ok=True)
     print(f"--- Starting Experiment: {env_id}, using Model: {algo_id} ---")

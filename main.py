@@ -12,7 +12,7 @@ if __name__ == "__main__":
     environments = [
         #{"id":"dm_control/cartpole-swingup-v0", "steps": 100000, "eval_freq": 10000}, 
         #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 10000}, 
-        {"id":"CarRacing-v3", "steps": 500000,"eval_freq": 50000}
+        {"id":"CarRacing-v3", "steps": 250000,"eval_freq": 50000}
     ]
     
     """    
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ]
     """
     #algorithms = ["SAC", "TD3", "PPO"]
-    algorithms = ["TD3", "PPO"]
+    algorithms = ["SAC","TD3", "PPO"]
     #seed_pool = [5, 8, 32, 67, 154]
     seed_pool = [214]
 
