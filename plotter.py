@@ -1,4 +1,5 @@
 import imageio
+import os
 import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,8 +35,10 @@ def compare_results(results, env_id):
         steps = data['timesteps']
         eval_data = data['results']
         
-        mean_rewards = np.mean(eval_data, axis=1)
-        plt.plot(steps, mean_rewards, label=f"{res['algo']}")
+        mean = np.mean(eval_data, axis=1)
+        std = np.std(eval_data, axis=1)
+        plt.fill_between(steps, mean - std, mean + std, alpha=0.2)
+        plt.plot(steps, mean, label=f"{res['algo']}")
 
     plt.title(f"Algorithm Comparison: {environment}")
     plt.xlabel("Timesteps")
@@ -44,3 +47,5 @@ def compare_results(results, env_id):
     plt.grid(True)
     plt.savefig(f"{results[-1]['path']}/../comparison_{environment}.png")
     plt.close()
+    
+    

@@ -12,7 +12,7 @@ if __name__ == "__main__":
     environments = [
         #{"id":"dm_control/cartpole-swingup-v0", "steps": 100000, "eval_freq": 10000}, 
         #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 10000}, 
-        {"id":"CarRacing-v3", "steps": 250000,"eval_freq": 50000}
+        {"id":"CarRacing-v3", "steps": 200000,"eval_freq": 25000}
     ]
     
     """    
@@ -22,10 +22,9 @@ if __name__ == "__main__":
         {"id":"CarRacing-v3", "steps": 500000,"eval_freq": 50000}
     ]
     """
-    #algorithms = ["SAC", "TD3", "PPO"]
-    algorithms = ["SAC","TD3", "PPO"]
-    #seed_pool = [5, 8, 32, 67, 154]
-    seed_pool = [214]
+    algorithms = ["TD3", "PPO", "SAC"]
+    seed_pool = [7]
+    #seed_pool = [2,3,4,5,1]
 
     for seed in seed_pool:
         for env in environments:
