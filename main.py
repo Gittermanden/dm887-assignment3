@@ -12,7 +12,7 @@ if __name__ == "__main__":
     environments = [
         {"id":"dm_control/cartpole-swingup-v0", "steps": 200000, "eval_freq": 25000}, 
         #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 10000}, 
-        {"id":"CarRacing-v3", "steps": 100000,"eval_freq": 20000}
+        {"id":"CarRacing-v3", "steps": 200000,"eval_freq": 25000}
     ]
     
     """    
