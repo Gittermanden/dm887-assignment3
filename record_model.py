@@ -1,4 +1,5 @@
 from gymnasium.wrappers import FlattenObservation
+from models.GRPO import GRPO
 from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecFrameStack, VecVideoRecorder, VecTransposeImage
@@ -34,6 +35,8 @@ def main(log_dir, env_id, seed, algo_id):
         best_model = TD3.load(best_model_path, env=env)
     elif algo_id == "PPO":
         best_model = PPO.load(best_model_path, env=env)
+    elif algo_id == "GRPO":
+        best_model = GRPO.load(best_model_path, env=env)
 
     #mean_reward, std_reward = evaluate_policy(best_model, env, n_eval_episodes=20)
     #print(f"Best Model - Mean reward: {mean_reward:.2f} +/- {std_reward:.2f}")
@@ -74,6 +77,8 @@ def main(log_dir, env_id, seed, algo_id):
         final_model = TD3.load(final_model_path, env=env)
     elif algo_id == "PPO":
         final_model = PPO.load(final_model_path, env=env)
+    elif algo_id == "GRPO":
+        final_model = GRPO.load(final_model_path, env=env)
         
         
     #mean_reward, std_reward = evaluate_policy(final_model, env, n_eval_episodes=20)

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import gymnasium as gym
+from models.GRPO import GRPO
 from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.env_util import make_vec_env
@@ -21,9 +22,9 @@ class ForceRGBChannel(gym.ObservationWrapper):
         return observation.reshape((64, 64, 1))
 
 def _make_car_env(render_mode=None):
-    env = gym.make("CarRacing-v3", continuous=True, render_mode=render_mode)
+    env = gym.make("CarRacing-v3", continuous=True, render_mode=render_mode, lap_complete_percent=0.95)
     #env = gym.wrappers.MaxAndSkipObservation(env, skip=4)
-    env = ResizeObservation(env, (84, 84))
+    env = ResizeObservation(env, (64, 64))
     env = GrayscaleObservation(env, keep_dim=True)
 
     #env = gym.wrappers.ReshapeObservation(env, (64, 64, 1))
@@ -82,6 +83,8 @@ def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1*np.ones(n_actions)) # This configuration gives a bias towards the gas factor when CarRacing.
         model = TD3(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=buffer_size, action_noise=action_noise, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False})
+    elif algo_id == "GRPO":
+        model = GRPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed)
         
     model.learn(total_timesteps=total_steps, callback=eval_callback, progress_bar=True)
     env.close()
