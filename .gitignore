@@ -1,0 +1,12 @@
+
+
+
+
+#Ignore build outputs
+eval_results/
+tb_logs
+
+#Ignore pictures and videos
+#*.png
+#*.mp4
+
