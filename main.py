@@ -10,9 +10,9 @@ from shimmy import dm_control_compatibility
 if __name__ == "__main__":
     
     environments = [
-        {"id":"dm_control/cartpole-swingup-v0", "steps": 200000, "eval_freq": 25000}, 
-        #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 10000}, 
-        {"id":"CarRacing-v3", "steps": 200000,"eval_freq": 25000}
+        #{"id":"dm_control/cartpole-swingup-v0", "steps": 200000, "eval_freq": 50000}, 
+        #{"id": "dm_control/acrobot-swingup-v0", "steps": 200000, "eval_freq": 50000}, 
+        {"id":"CarRacing-v3", "steps": 400000,"eval_freq": 50000}
     ]
     
     """    
@@ -22,18 +22,18 @@ if __name__ == "__main__":
         {"id":"CarRacing-v3", "steps": 500000,"eval_freq": 50000}
     ]
     """
+    algorithms = ["SAC", "TD3", "PPO", "GRPO"]
     #algorithms = ["SAC", "TD3", "PPO"]
-    #algorithms = ["SAC", "TD3", "PPO"]
-    algorithms = ["GRPO", "PPO"]
+    #algorithms = ["GRPO", "PPO"]
     #seed_pool = [5, 8, 32, 67, 154]
-    seed_pool = [47]
+    seed_pool = [38]
 
 
     for seed in seed_pool:
         for env in environments:
             results = []
             for algo in algorithms:
-                n_envs = 8 if algo == "PPO" or "GRPO" else 1 # PPO is the only algorithm that is built around multiple environments...
+                n_envs = 32 if algo in ["PPO", "GRPO"] else 1 # PPO is the only algorithm that is built around multiple environments...
                 try:
                     log_path = run_experiment(
                         env_id=env['id'], 

@@ -57,15 +57,15 @@ def run_experiment(env_id, algo_id, total_steps=100000, seed=42, n_envs=1, eval_
 
 
     if algo_id == "PPO":
-        model = PPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed)
+        model = PPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed, n_steps=128)
     elif algo_id == "SAC":
-        model = SAC(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=100000, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False}, learning_rate=1e-4, learning_starts=10000)
+        model = SAC(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=100000, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False}, learning_rate=1e-4, learning_starts=20000)
     elif algo_id == "TD3":
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.3*np.ones(n_actions))
-        model = TD3(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=400000, action_noise=action_noise, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False}, learning_rate=1e-4)
+        model = TD3(policy_type, env, tensorboard_log=tb_log_dir, buffer_size=400000, action_noise=action_noise, seed=seed, optimize_memory_usage=True, replay_buffer_kwargs={"handle_timeout_termination": False}, learning_rate=1e-4, learning_starts=20000)
     elif algo_id == "GRPO":
-        model = GRPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed)
+        model = GRPO(policy_type, env, tensorboard_log=tb_log_dir, seed=seed, n_steps=128)
         
     model.learn(total_timesteps=total_steps, callback=eval_callback, progress_bar=True)
     env.close()

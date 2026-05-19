@@ -176,6 +176,7 @@ class GRPO(OnPolicyAlgorithm):
             self.observation_space,
             self.action_space,
             self.lr_schedule,
+            use_sde=self.use_sde,
             **self.policy_kwargs,
         ).to(self.device)
         self.ref_policy.load_state_dict(self.policy.state_dict())
@@ -206,7 +207,7 @@ class GRPO(OnPolicyAlgorithm):
         entropy_losses = []
         pg_losses = []
         clip_fractions = []
-
+        
         with th.no_grad():
                 # Convert buffer returns to tensor
                 all_returns = th.tensor(self.rollout_buffer.returns).to(self.device) # (n_steps, n_envs)
@@ -218,10 +219,55 @@ class GRPO(OnPolicyAlgorithm):
                 # Compute advantages: (R - mean) / std
                 # Flatten the result to (n_steps * n_envs, ) to match the buffer's flattened internal structure
                 raw_advantages = (all_returns - mean) / (std + 1e-8)
+
+                #masked_advantages = th.clamp(raw_advantages, min=0.0)
                 
                 # Update the buffer's advantages so .get() pulls the right values
                 self.rollout_buffer.advantages = raw_advantages.cpu().numpy()
+                #self.rollout_buffer.advantages = masked_advantages.cpu().numpy()
+        """
+        with th.no_grad():
+                    # 1. Convert buffer returns and observations to tensors
+                    all_returns = th.tensor(self.rollout_buffer.returns, dtype=th.float32).to(self.device) # (n_steps, n_envs)
+                    all_obs = th.tensor(self.rollout_buffer.observations, dtype=th.float32).to(self.device) # (n_steps, n_envs, obs_dim)
+                    
+                    n_steps, n_envs = all_returns.shape
+                    group_size = 4  # Adjust this! Ensure self.env.num_envs % group_size == 0
+                    num_groups = n_envs // group_size
 
+                    # 2. Pick a key state feature to sort by (e.g., distance to goal, height, x-velocity)
+                    # For this example, we take the very first element of the observation vector (index 0)
+                    sorting_feature = all_obs[:, :, 0] # Shape: (n_steps, n_envs)
+                    
+                    # Get the indices that would sort the environments at EACH individual timestep
+                    sort_indices = th.argsort(sorting_feature, dim=1) # Shape: (n_steps, n_envs)
+
+                    # 3. Align the returns according to the sorted states (Apples to Apples)
+                    sorted_returns = th.gather(all_returns, dim=1, index=sort_indices) # (n_steps, n_envs)
+
+                    # 4. Reshape into localized sub-groups
+                    # Shape becomes: (n_steps, num_groups, group_size)
+                    grouped_returns = sorted_returns.view(n_steps, num_groups, group_size)
+
+                    # 5. Calculate localized mean and std within these specific state clusters
+                    mean = grouped_returns.mean(dim=2, keepdim=True) # (n_steps, num_groups, 1)
+                    std = grouped_returns.std(dim=2, keepdim=True)   # (n_steps, num_groups, 1)
+
+                    # 6. Compute advantages locally within the cluster
+                    sorted_advantages = (grouped_returns - mean) / (std + 1e-8)
+                    sorted_advantages = sorted_advantages.view(n_steps, n_envs) # Flatten back to 2D
+
+                    # === Combined with your Masking Choice from earlier ===
+                    sorted_advantages = th.clamp(sorted_advantages, min=0.0)
+
+                    # 7. CRITICAL STEP: Scatter the advantages back to their original environment indices
+                    # Since we shuffled the returns to calculate the math, we must un-shuffle them
+                    raw_advantages = th.zeros_like(all_returns)
+                    raw_advantages.scatter_(dim=1, index=sort_indices, src=sorted_advantages)
+                    
+                    # Update the buffer's advantages so .get() pulls the right values
+                    self.rollout_buffer.advantages = raw_advantages.cpu().numpy()
+        """
         continue_training = True
         # train for n_epochs epochs
         for epoch in range(self.n_epochs):
@@ -307,7 +353,6 @@ class GRPO(OnPolicyAlgorithm):
         self.logger.record("train/approx_kl", np.mean(approx_kl_divs))
         self.logger.record("train/clip_fraction", np.mean(clip_fractions))
         self.logger.record("train/loss", loss.item())
-        self.logger.record("train/explained_variance", explained_var)
         if hasattr(self.policy, "log_std"):
             self.logger.record("train/std", th.exp(self.policy.log_std).mean().item())
 
